@@ -52,11 +52,15 @@
     <label>
       client_id（Azure 应用注册的 Application (client) ID）<br>
       <input type="text" id="client_id" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="width: 90%;">
-    </label>
-    <label>
+    </label>    <label>
       redirect_uri（授权回调页面，需与 Azure 注册一致）<br>
       <input type="text" id="redirect_uri" required style="width: 90%;" value="">
-    </label>    <label>
+    </label>
+    <label>
+      client_secret（應用機密，用於 Web 應用類型）<br>
+      <input type="password" id="client_secret" style="width: 90%;" placeholder="Web 應用類型通常需要填寫此項">
+    </label>
+    <label>
       授权类型<br>
       <select id="type">
         <option value="common">国际版/个人/商业版（common）</option>
@@ -103,9 +107,9 @@
       window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';
 
     document.getElementById('authForm').onsubmit = async function (e) {
-      e.preventDefault();
-      const client_id = document.getElementById('client_id').value.trim();
+      e.preventDefault();      const client_id = document.getElementById('client_id').value.trim();
       const redirect_uri = encodeURIComponent(document.getElementById('redirect_uri').value.trim());
+      const client_secret = document.getElementById('client_secret').value.trim();
       const type = document.getElementById('type').value;
       if (!client_id || !redirect_uri) {
         alert('請填寫完整信息！');
@@ -120,15 +124,17 @@
         authorizeUrl = `https://login.chinacloudapi.cn/common/oauth2/v2.0/authorize`;
       } else {
         authorizeUrl = `https://login.microsoftonline.com/${type}/oauth2/v2.0/authorize`;
+      }      sessionStorage.setItem('onedrive_client_id', client_id);
+      if (client_secret) {
+        sessionStorage.setItem('onedrive_client_secret', client_secret);
       }
-      sessionStorage.setItem('onedrive_client_id', client_id);
       let tokenEndpoint = "";
       if (type === "microsoftonline.com") {
         tokenEndpoint = "https://login.chinacloudapi.cn/common/oauth2/v2.0/token";
       } else {
         tokenEndpoint = `https://login.microsoftonline.com/${type}/oauth2/v2.0/token`;
       }
-      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);      // 獲取應用類型
+      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);// 獲取應用類型
       const appType = document.getElementById('app_type').value;
       sessionStorage.setItem('onedrive_app_type', appType);
       

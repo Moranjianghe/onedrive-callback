@@ -32,19 +32,24 @@
     const error = getQueryVariable('error');
     const resultDiv = document.getElementById('result');    // 從 URL 或 session 取得必要資訊
     const client_id = sessionStorage.getItem('onedrive_client_id');
-    const redirect_uri = window.location.href.split('?')[0];    // 定義獲取 token 的函數
-    async function getRefreshToken(code, clientId, redirectUri) {
+    const redirect_uri = window.location.href.split('?')[0];    // 定義獲取 token 的函數    async function getRefreshToken(code, clientId, redirectUri) {
       try {
         const tokenEndpoint = sessionStorage.getItem('onedrive_token_endpoint') || 
           'https://login.microsoftonline.com/common/oauth2/v2.0/token';
         const code_verifier = sessionStorage.getItem('onedrive_code_verifier') || '';
         const appType = sessionStorage.getItem('onedrive_app_type') || 'web';
+        const clientSecret = sessionStorage.getItem('onedrive_client_secret') || '';
         
         const formData = new URLSearchParams();
         formData.append('client_id', clientId);
         formData.append('grant_type', 'authorization_code');
         formData.append('code', code);
         formData.append('redirect_uri', redirectUri);
+        
+        // 添加 client_secret (若有提供)
+        if (clientSecret) {
+          formData.append('client_secret', clientSecret);
+        }
         
         // 根據應用類型添加不同的參數
         if ((appType === 'spa' || appType === 'web') && code_verifier) {
