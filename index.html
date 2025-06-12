@@ -1,351 +1,78 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-TW">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OneDrive 授权工具</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
   <style>
-    :root {
-      --primary-color: #1976d2;
-      --primary-dark: #0d47a1;
-      --primary-light: #e3f2fd;
-      --secondary-color: #ffe066;
-      --secondary-dark: #856404;
-      --secondary-light: #fff3cd;
-      --bg-color: #f8f9fa;
-      --text-color: #212529;
-      --card-bg: #ffffff;
-      --code-bg: #f1f3f5;
-      --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      --radius: 6px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      line-height: 1.6;
-      color: var(--text-color);
-      background-color: var(--bg-color);
+      background: #f8f9fa;
+      color: #212529;
+      margin: 0;
       padding: 2rem 1rem;
     }
 
     .container {
+      max-width: 900px;
       margin: 0 auto;
-      max-width: 800px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      padding: 2rem;
     }
 
-    h1,
-    h2,
-    h3 {
-      color: var(--primary-color);
-      margin-bottom: 0.8rem;
-      font-weight: 600;
+    .markdown-body img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1.2em auto;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      border-radius: 6px;
     }
 
-    h1 {
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      margin-top: 0.5rem;
-    }
-
-    p {
-      margin-bottom: 1rem;
-    }
-
-    code,
-    .url {
-      background: var(--code-bg);
-      padding: 0.2rem 0.4rem;
-      border-radius: var(--radius);
-      font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-      font-size: 0.9em;
-    }
-
-    .url {
-      display: inline-block;
-      word-break: break-all;
-      margin: 0.3rem 0;
-    }
-
-    .step {
-      border-left: 4px solid var(--primary-color);
-      background: var(--card-bg);
-      margin: 1.5rem 0;
-      padding: 1.5rem;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      box-shadow: var(--shadow);
-    }
-
-    .notice {
-      background: var(--secondary-light);
-      border-left: 4px solid var(--secondary-color);
-      padding: 1.2rem;
-      margin: 1.2rem 0;
-      color: var(--secondary-dark);
-      border-radius: 0 var(--radius) var(--radius) 0;
-    }
-
-    .tip {
-      background: var(--primary-light);
-      border-left: 4px solid var(--primary-color);
-      padding: 1.2rem;
-      margin: 1.2rem 0;
-      color: var(--primary-dark);
-      border-radius: 0 var(--radius) var(--radius) 0;
-    }
-
-    ul,
-    ol {
-      margin: 0.8rem 0 0.8rem 1.8rem;
-    }
-
-    li {
-      margin-bottom: 0.5rem;
-    }
-
-    li:last-child {
-      margin-bottom: 0;
-    }
-
-    a {
-      color: var(--primary-color);
-      text-decoration: none;
-      transition: all 0.2s ease;
-      border-bottom: 1px solid transparent;
-    }
-
-    a:hover {
-      border-bottom-color: var(--primary-color);
-    }
-
-    a:focus {
-      outline: 2px solid var(--primary-light);
-      border-radius: 2px;
-    }
-
-    b {
-      font-weight: 600;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 1rem 0.5rem;
-      }
-
-      .step {
-        padding: 1rem;
-        margin: 1rem 0;
-      }
-
-      h1 {
-        font-size: 1.8rem;
-      }
-
-      h2 {
-        font-size: 1.3rem;
-      }
+    .markdown-body {
+      box-sizing: border-box;
+      min-width: 0;
+      padding: 0;
+      background: none;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
 </head>
 
 <body>
-  <h1>适用于 Alist 的 OneDrive 授权工具</h1>
-  <div class="step">
-    <h2>一、注册应用</h2>
-    <ul>
-      <li>登录 <a href="https://portal.azure.com/" target="_blank" rel="noopener noreferrer">Azure 门户</a></li>
-      <li>注册应用，获得 <code>client_id</code>（Application (client) ID）</li>
-      <li>在"重定向 URI"中添加你的 GitHub Pages 页面地址，如：<br>
-        <span class="url">https://yourname.github.io/yourrepo/onedrive-callback.html</span>
-      </li>
-
-
-
-      <li><b>配置必要的 API 权限</b>：
-        <ul>
-          <li>在应用注册后，进入"API 权限"页面</li>
-          <li>点击"添加权限" > 选择"Microsoft Graph"</li>
-          <li>选择"委托的权限"，搜索 Files 并勾选需要使用的以 "Files." 开头的权限</li>
-          <li class="image-container" style="margin: 15px 0;">
-            <figure style="margin: 0; text-align: center;">
-              <img src="./pbtqwogj.3hx.png" alt="Azure应用注册示例"
-                style="width: 800px; max-width: 100%; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <figcaption style="margin-top: 8px; font-style: italic; color: #666; font-size: 0.9em;">Azure应用注册界面示例
-              </figcaption>
-            </figure>
-          </li>
-          <li>点击"添加权限"保存</li>
-          <li>如为组织账户，可能需要管理员同意这些权限</li>
-        </ul>
-      </li>
-    </ul>
-
-    <div class="notice" style="background: #e3f2fd; color: #0d47a1; border-left: 4px solid #1976d2;">
-      <strong>⚠️ API权限配置很重要！</strong>
-      <p>若未正确配置API权限，即使授权成功也无法正常访问OneDrive文件。</p>
-    </div>
-    </li>
-
-    </ol>
+  <div class="container">
+    <article id="readme-content" class="markdown-body">正在加載說明文件...</article>
   </div>
-
-  <div class="step">
-    <h2>二、发起授权</h2>
-    <ol>
-      <li>
-        <b>部署授权页面到 GitHub Pages</b>
-      </li>
-      <li>
-        访问你部署的 <code>onedrive-auth.html</code>，如：<br>
-        <a href="./onedrive-auth.html" target="_blank"
-          rel="noopener noreferrer">https://yourname.github.io/yourrepo/onedrive-auth.html</a>
-      </li>
-      <li>
-        <b>填写授权信息</b><br>
-        <ul>
-          <li>输入 <b>client_id</b>（Azure 应用注册获得）</li>
-          <li><b>redirect_uri</b> 默认自动填为同目录下的 <code>onedrive-callback.html</code>，如无特殊需求无需修改</li>
-          <li>选择授权类型（一般选“国际版/个人/商业版”即可）</li>
-        </ul>
-      </li>
-      <li>
-        <b>点击“跳转微软授权”</b><br>
-        系统将跳转到微软登录页面，登录并同意授权后，微软会回传授权码（code）到回调页面。
-      </li>
-    </ol>
-  </div>
-
-  <div class="step">
-    <h2>三、回调与后续操作</h2>
-    <ol>
-      <li>
-        <b>回调页面显示授权结果</b><br>
-        授权成功后，浏览器会跳转至 <code>onedrive-callback.html</code>，页面会显示授权码。<br>
-        你可以复制该 code，返回 Alist 后台进行后续挂载操作。
-        <div class="tip">
-          高级用法：如你有开发后端 API 的能力，也可以在回调页面用 JS 自动将 code 转发给自己的后端处理。
-        </div>
-      </li>
-      <li>
-        <b>在 Alist 挂载 OneDrive 时</b><br>
-        <ul>
-          <li>使用 Azure 应用的 <code>client_id</code> 和 <code>client_secret</code></li>
-          <li><b>redirect_uri</b> 填与你 Azure 注册和授权页面一致的地址</li>
-          <li>按照 Alist 指引完成挂载</li>
-        </ul>
-      </li>
-    </ol>
-  </div>
-
-  <div class="step">
-    <h2>四、常见问题</h2>
-    <ul>
-      <li><b>redirect_uri 必须完全一致</b>：包括大小写、协议（http/https）、末尾斜杠等，必须与 Azure 注册和页面一致。</li>
-      <li><b>页面无法访问？</b> 检查 GitHub Pages 是否正确部署，URL 是否拼写无误。</li>
-      <li><b>授权后没看到 code？</b> 检查 Azure 应用重定向 URI 是否准确，页面代码是否为最新版。</li>
-      <li><b>遇到"Invalid client error"？</b> 确认 client_id 输入准确，无多余空格。</li>
-      <li><b>出现"AADSTS50011"错误？</b> 检查 reply_url 是否在 Azure 应用注册的重定向 URI 列表中。</li>
-      <li><b>显示"insufficient privileges"？</b> 确认在 Azure 应用中授予了足够的权限（Files.ReadWrite.All 和 User.Read）。</li>
-      <li><b>如何配置API权限？</b> 在Azure应用的"API权限"页面，添加Microsoft
-        Graph的委托权限，必须包括Files.ReadWrite.All（读写所有文件）和User.Read（读取用户信息），添加后可能需要管理员同意。</li>
-      <li><b>Token 过期？</b> Alist 会自动刷新，若失败可重新获取授权码并更新。</li>
-      <li><b>世纪互联版本授权失败？</b> 确认选择了正确的授权类型（微软中国版）并使用正确的登录端点。</li>
-    </ul>
-  </div>
-
-  <div class="step">
-    <h2>五、Alist挂载OneDrive详细步骤</h2>
-    <ol>
-      <li>
-        <b>进入Alist后台</b><br>
-        <ul>
-          <li>登录Alist管理员账号</li>
-          <li>进入"存储"页面，点击"添加"按钮</li>
-        </ul>
-      </li>
-      <li>
-        <b>基本配置</b><br>
-        <ul>
-          <li>驱动选择 <code>OneDrive</code></li>
-          <li>挂载路径：设置在Alist中显示的目录，如 <code>/onedrive</code></li>
-          <li>根文件夹路径：默认为 <code>/</code>，可选择挂载特定目录</li>
-          <li>类型：根据你的OneDrive类型选择（国际版/世纪互联等）</li>
-        </ul>
-      </li>
-      <li>
-        <b>认证参数</b><br>
-        <ul>
-          <li>填写你在Azure注册的应用信息：
-            <ul>
-              <li><code>client_id</code>：Azure应用注册获得的Application (client) ID</li>
-              <li><code>client_secret</code>：在Azure应用中生成的密钥值（需在"证书和密码"页面创建）</li>
-              <li><code>redirect_uri</code>：填写与前面授权页面一致的回调地址</li>
-            </ul>
-          </li>
-          <li>确认已配置所需API权限（Files.ReadWrite.All 和 User.Read 等）</li>
-          <li>点击"获取刷新令牌"，系统会自动跳转到你的授权页面</li>
-        </ul>
-      </li>
-      <li>
-        <b>完成授权流程</b><br>
-        <ul>
-          <li>按前面第二、三部分的步骤完成授权</li>
-          <li>获取到授权码（code）后回到Alist</li>
-          <li>将授权码粘贴到Alist的"刷新令牌"输入框中</li>
-          <li>点击"保存"完成挂载</li>
-        </ul>
-      </li>
-      <li>
-        <b>验证挂载</b><br>
-        <ul>
-          <li>返回Alist文件列表，可以看到已挂载的OneDrive目录</li>
-          <li>点击进入查看文件，确认挂载成功</li>
-        </ul>
-      </li>
-    </ol>
-
-    <div class="tip">
-      <b>高级提示：</b><br>
-      <ul>
-        <li>如果需要挂载多个OneDrive账号，需要为每个账号重复以上流程</li>
-        <li>token有效期通常为90天，超时后系统会自动刷新</li>
-        <li>如遇到问题，可检查Alist日志获取错误详情</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="step">
-    <h2>六、参考链接</h2>
-    <ul>
-      <li><a href="https://github.com/AlistGo/docs/blob/main/docs/zh/guide/drivers/onedrive.md" target="_blank"
-          rel="noopener noreferrer">Alist 官方文档</a></li>
-      <li><a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/quickstart-register-app"
-          target="_blank" rel="noopener noreferrer">微软 Azure 应用注册文档</a></li>
-      <li><a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages 官方说明</a></li>
-    </ul>
-  </div>
-
-  <div class="notice">
-    <p><del>如遇其它技术问题，可在本项目 issue 区留言或提交讨论。</del></p>
-    <p>代码都是 AI 写的，出了问题可以给我留言但我也不一定会修。</p>
-  </div>
-
-  <footer>
-    <p class="copyright">&copy; <span id="current-year">2023</span> OneDrive 授权工具</p>
-    <script>document.getElementById('current-year').innerText = new Date().getFullYear();</script>
-  </footer>
-  </div>
+  <script>
+    const md = window.markdownit({
+      html: true,
+      linkify: true,
+      highlight: function (str, lang) {
+        if (lang && window.hljs.getLanguage(lang)) {
+          try {
+            return '<pre class="hljs"><code>' +
+              window.hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+              '</code></pre>';
+          } catch (__) {}
+        }
+        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+      }
+    });
+    fetch('./README.md')
+      .then(res => res.text())
+      .then(text => {
+        document.getElementById('readme-content').innerHTML = md.render(text);
+      })
+      .catch(() => {
+        document.getElementById('readme-content').innerText = '加載 README.md 失敗。';
+      });
+  </script>
+  <!-- 如需更美觀的 markdown，可引入 marked.js 或 showdown.js 並自定義樣式 -->
 </body>
 
 </html>

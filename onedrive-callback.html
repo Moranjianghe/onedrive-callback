@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">  <title>OneDrive 授權回調</title>
   <style>
@@ -85,26 +85,46 @@
           if (result.success) {
             resultDiv.innerHTML = `
               <div class="success">授權成功！請複製下方 refresh_token 並粘貼到 <b>Alist 後台掛載頁面</b>：</div>
-              <div class="code-block"><code>${result.refresh_token || '(未獲取到)'}</code></div>
+              <div class="code-block" style="display:flex;align-items:center;">
+                <code id="refreshTokenCode">${result.refresh_token || '(未獲取到)'}</code>
+                <button id="copyTokenBtn" style="margin-left:10px;cursor:pointer;">複製</button>
+              </div>
+              <div id="copyMsg" style="color:green;font-size:0.95em;display:none;">已複製！</div>
               <div style="color:#888;font-size:0.95em;margin-bottom:1em;">
                 <b>說明：</b>上方是有效的 refresh_token，<br>
                 直接粘貼到 Alist 後台的 refresh_token 輸入框即可。
               </div>
               <div>你可以現在關閉此頁面，回到 Alist 後台繼續操作。</div>
             `;
+            // 複製按鈕事件
+            const btn = document.getElementById('copyTokenBtn');
+            const codeEl = document.getElementById('refreshTokenCode');
+            const msg = document.getElementById('copyMsg');
+            if (btn && codeEl) {
+              btn.onclick = function() {
+                const text = codeEl.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                  if (msg) {
+                    msg.style.display = 'inline';
+                    setTimeout(() => { msg.style.display = 'none'; }, 1500);
+                  }
+                });
+              };
+            }
           } else {
             resultDiv.innerHTML = `
-              <div class="error">獲取 refresh_token 失敗：${result.error}</div>              <div>這可能是由於權限問題或網絡原因，您也可以嘗試使用提供的 code：</div>
+              <div class="error">獲取 refresh_token 失敗：${result.error}</div>
+              <div>這可能是由於權限問題或網絡原因，您也可以嘗試使用提供的 code：</div>
               <div class="code-block"><code>code: ${code}</code></div>
             `;
           }
         });
-      
-      // 如需自動提交 code 到後端，可在此添加 XHR/Fetch 代碼    } else if (error) {
+    } else if (error) {
       resultDiv.innerHTML = `
         <div class="error">授權失敗：${error}</div>
         <div>請檢查 Azure 應用配置和 redirect URI。</div>
-      `;    } else {
+      `;
+    } else {
       resultDiv.innerHTML = `
         <div class="error">未檢測到 code，請透過正確的授權流程訪問本頁面。</div>
       `;
