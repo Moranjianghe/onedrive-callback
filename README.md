@@ -1,5 +1,7 @@
 # [適用於 Alist 的 OneDrive 授權工具](https://github.com/Moranjianghe/onedrive-callback)
 
+此項目廢棄，替代：[Moranjianghe/onedrive\-licensing\-tool\-for\-alist](https://github.com/Moranjianghe/onedrive-licensing-tool-for-alist)
+
 >項目 [AlistGo/alist](https://github.com/AlistGo/alist) 由個人開發者轉由企業維護後，此前的回傳頁面 `https://alist.nn.ci/tool/onedrive/callback` 已經無法正常使用，官網文檔也無法正常查看，加之大家對原先的驗證方式亦有隱私權的顧慮，故編寫了兩個簡單的頁面和一個使用教程。
 
 >本工具旨在協助用戶自行完成 OneDrive 授權，適用於 Alist 等第三方掛載場景，無需將敏感資訊交給他人。
