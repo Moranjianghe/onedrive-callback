@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>OneDrive 授权回调</title>
+  <meta charset="UTF-8">  <title>OneDrive 授權回調</title>
   <style>
     body { font-family: sans-serif; margin: 2em; }
     .success { color: green; }
     .error   { color: red; }
     .code-block { background: #f4f4f4; padding: 0.5em; border-radius: 4px; margin: 1em 0; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; display: inline-block; margin-left: 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <h1>OneDrive 授权结果</h1>
+  <h1>OneDrive 授權結果</h1>
   <div id="result"></div>
   <script>
     // 解析 URL 参数
@@ -29,37 +30,83 @@
 
     const code = getQueryVariable('code');
     const error = getQueryVariable('error');
-    const resultDiv = document.getElementById('result');
+    const resultDiv = document.getElementById('result');    // 從 URL 或 session 取得必要資訊
+    const client_id = sessionStorage.getItem('onedrive_client_id');
+    const redirect_uri = window.location.href.split('?')[0];
 
-    // 取得 code_verifier
-    const code_verifier = sessionStorage.getItem('onedrive_pkce_code_verifier');
-
-    // 合成 token（Alist 格式：code&code_verifier）
-    function joinToken(code, verifier) {
-      // Alist 官方格式為 code + '&' + code_verifier
-      return code && verifier ? `${code}&${verifier}` : '';
+    // 定義獲取 token 的函數
+    async function getRefreshToken(code, clientId, redirectUri) {
+      try {
+        // 決定使用哪個 endpoint (根據之前的選擇)
+        const tokenEndpoint = sessionStorage.getItem('onedrive_token_endpoint') || 
+          'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+          // 準備表單數據
+        const formData = new URLSearchParams();
+        formData.append('client_id', clientId);
+        formData.append('grant_type', 'authorization_code');
+        formData.append('code', code);
+        formData.append('redirect_uri', redirectUri);
+        
+        // 發送請求獲取 token
+        const response = await fetch(tokenEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return {
+          refresh_token: data.refresh_token,
+          access_token: data.access_token,
+          success: true
+        };
+      } catch (error) {
+        console.error('獲取 token 失敗:', error);
+        return {
+          error: error.message,
+          success: false
+        };
+      }
     }
 
     if (code) {
-      const token = joinToken(code, code_verifier);
+      // 顯示正在處理的訊息
       resultDiv.innerHTML = `
-        <div class="success">授權成功！請複製下方 token 並粘貼到 <b>Alist 後台掛載頁面</b> 的 token 輸入框：</div>
-        <div class="code-block"><code>${token || '(未獲取到)'}</code></div>
-        <div style="color:#888;font-size:0.95em;margin-bottom:1em;">
-          <b>說明：</b>此 token 格式為 <code>code&code_verifier</code>，<br>
-          只需粘貼到 Alist 後台掛載頁面，Alist 會自動為你換取 refresh_token。
-        </div>
-        <div>你可以現在關閉此頁面，回到 Alist 後台繼續操作。</div>
-      `;
-      // 如需自動提交 code 到後端，可在此添加 XHR/Fetch 代碼
-    } else if (error) {
+        <div>正在獲取 refresh_token，請稍候...</div>
+      `;      // 獲取 refresh_token
+      getRefreshToken(code, client_id, redirect_uri)
+        .then(result => {
+          if (result.success) {
+            resultDiv.innerHTML = `
+              <div class="success">授權成功！請複製下方 refresh_token 並粘貼到 <b>Alist 後台掛載頁面</b>：</div>
+              <div class="code-block"><code>${result.refresh_token || '(未獲取到)'}</code></div>
+              <div style="color:#888;font-size:0.95em;margin-bottom:1em;">
+                <b>說明：</b>上方是有效的 refresh_token，<br>
+                直接粘貼到 Alist 後台的 refresh_token 輸入框即可。
+              </div>
+              <div>你可以現在關閉此頁面，回到 Alist 後台繼續操作。</div>
+            `;
+          } else {
+            resultDiv.innerHTML = `
+              <div class="error">獲取 refresh_token 失敗：${result.error}</div>              <div>這可能是由於權限問題或網絡原因，您也可以嘗試使用提供的 code：</div>
+              <div class="code-block"><code>code: ${code}</code></div>
+            `;
+          }
+        });
+      
+      // 如需自動提交 code 到後端，可在此添加 XHR/Fetch 代碼    } else if (error) {
       resultDiv.innerHTML = `
-        <div class="error">授权失败：${error}</div>
-        <div>请检查 Azure 应用配置和 redirect URI。</div>
-      `;
-    } else {
+        <div class="error">授權失敗：${error}</div>
+        <div>請檢查 Azure 應用配置和 redirect URI。</div>
+      `;    } else {
       resultDiv.innerHTML = `
-        <div class="error">未检测到 code，请通过正确的授权流程访问本页面。</div>
+        <div class="error">未檢測到 code，請透過正確的授權流程訪問本頁面。</div>
       `;
     }
   </script>

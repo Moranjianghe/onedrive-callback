@@ -41,16 +41,7 @@
   <script>
     // 自动填充 redirect_uri 为当前页面目录下的 onedrive-callback.html
     document.getElementById('redirect_uri').value =
-      window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';
-
-    // PKCE 工具函數
-    async function pkceChallengeFromVerifier(verifier) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(verifier);
-      const digest = await window.crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
+      window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';    // 產生隨機字串函數
     function randomString(length) {
       const array = new Uint8Array(length);
       window.crypto.getRandomValues(array);
@@ -66,29 +57,27 @@
       if (!client_id || !redirect_uri) {
         alert('请填写完整信息！');
         return false;
-      }
-
-      let authorizeUrl;
+      }      let authorizeUrl;
       if (type === "microsoftonline.com") {
         authorizeUrl = `https://login.chinacloudapi.cn/common/oauth2/v2.0/authorize`;
       } else {
         authorizeUrl = `https://login.microsoftonline.com/${type}/oauth2/v2.0/authorize`;
       }
-
-      // 生成 PKCE 參數
-      const code_verifier = randomString(64);
-      const code_challenge = await pkceChallengeFromVerifier(code_verifier);
-
-      // 保存 code_verifier 以便回調頁面使用
-      sessionStorage.setItem('onedrive_pkce_code_verifier', code_verifier);
-
-      const url = `${authorizeUrl}?client_id=${client_id}`
+        // 保存授權相關信息以便回調頁面使用
+      sessionStorage.setItem('onedrive_client_id', client_id);
+      
+      // 保存對應的 token endpoint
+      let tokenEndpoint = "";
+      if (type === "microsoftonline.com") {
+        tokenEndpoint = "https://login.chinacloudapi.cn/common/oauth2/v2.0/token";
+      } else {
+        tokenEndpoint = `https://login.microsoftonline.com/${type}/oauth2/v2.0/token`;
+      }
+      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);      const url = `${authorizeUrl}?client_id=${client_id}`
         + `&response_type=code`
         + `&redirect_uri=${redirect_uri}`
         + `&scope=offline_access%20Files.ReadWrite.All%20User.Read`
-        + `&response_mode=query`
-        + `&code_challenge=${code_challenge}`
-        + `&code_challenge_method=S256`;
+        + `&response_mode=query`;
 
       console.log("授权跳转URL：", decodeURIComponent(url)); // ← 新增這行，方便排查
 
