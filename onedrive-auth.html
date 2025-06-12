@@ -43,7 +43,21 @@
     document.getElementById('redirect_uri').value =
       window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';
 
-    document.getElementById('authForm').onsubmit = function(e) {
+    // PKCE 工具函數
+    async function pkceChallengeFromVerifier(verifier) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(verifier);
+      const digest = await window.crypto.subtle.digest('SHA-256', data);
+      return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+    function randomString(length) {
+      const array = new Uint8Array(length);
+      window.crypto.getRandomValues(array);
+      return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+    }
+
+    document.getElementById('authForm').onsubmit = async function(e) {
       e.preventDefault();
       const client_id = document.getElementById('client_id').value.trim();
       const redirect_uri = encodeURIComponent(document.getElementById('redirect_uri').value.trim());
@@ -61,11 +75,20 @@
         authorizeUrl = `https://login.microsoftonline.com/${type}/oauth2/v2.0/authorize`;
       }
 
+      // 生成 PKCE 參數
+      const code_verifier = randomString(64);
+      const code_challenge = await pkceChallengeFromVerifier(code_verifier);
+
+      // 保存 code_verifier 以便回調頁面使用
+      sessionStorage.setItem('onedrive_pkce_code_verifier', code_verifier);
+
       const url = `${authorizeUrl}?client_id=${client_id}`
         + `&response_type=code`
         + `&redirect_uri=${redirect_uri}`
         + `&scope=offline_access%20Files.ReadWrite.All%20User.Read`
-        + `&response_mode=query`;
+        + `&response_mode=query`
+        + `&code_challenge=${code_challenge}`
+        + `&code_challenge_method=S256`;
 
       window.location.href = url;
     };
