@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>OneDrive 授权工具使用说明</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: sans-serif; margin: 0 auto; max-width: 700px; padding: 1.5em; background: #f6f8fa; color: #222; }
+    h1, h2, h3 { color: #1976d2; }
+    code, .url { background: #eee; padding: 2px 4px; border-radius: 3px; font-size: 1em; }
+    .step { border-left: 4px solid #1976d2; background: #fff; margin: 1em 0; padding: 1em 1.5em; }
+    .notice { background: #fff3cd; border-left: 4px solid #ffe066; padding: 1em; margin: 1em 0; color: #856404; }
+    .tip { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 1em; margin: 1em 0; color: #1565c0; }
+    ul, ol { margin-left: 1.5em; }
+    a { color: #1976d2; text-decoration: underline; }
+    @media (max-width: 600px) {
+      body { padding: 0.5em; }
+      .step { padding: 0.7em 1em; }
+    }
+  </style>
+</head>
+<body>
+  <h1>OneDrive 授权工具使用说明</h1>
+
+  <div class="step">
+    <h2>一、准备工作</h2>
+    <ol>
+      <li>
+        <b>注册 Azure 应用</b><br>
+        <ul>
+          <li>登录 <a href="https://portal.azure.com/" target="_blank">Azure 门户</a></li>
+          <li>注册应用，获得 <code>client_id</code>（Application (client) ID）</li>
+          <li>在“重定向 URI”中添加你的 GitHub Pages 页面地址，如：<br>
+            <span class="url">https://yourname.github.io/yourrepo/onedrive-callback.html</span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <b>部署授权页面到 GitHub Pages</b><br>
+        <ul>
+          <li>上传 <code>onedrive-auth.html</code>（授权跳转工具）</li>
+          <li>上传 <code>onedrive-callback.html</code>（接收回调页面）</li>
+          <li>确保页面可公网访问</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h2>二、如何发起授权</h2>
+    <ol>
+      <li>
+        <b>打开授权工具页面</b><br>
+        访问你部署的 <code>onedrive-auth.html</code>，如：<br>
+        <a href="/onedrive-auth.html" target="_blank">https://yourname.github.io/yourrepo/onedrive-auth.html</a>
+      </li>
+      <li>
+        <b>填写授权信息</b><br>
+        <ul>
+          <li>输入 <b>client_id</b>（Azure 应用注册获得）</li>
+          <li><b>redirect_uri</b> 默认自动填为同目录下的 <code>onedrive-callback.html</code>，如无特殊需求无需修改</li>
+          <li>选择授权类型（一般选“国际版/个人/商业版”即可）</li>
+        </ul>
+      </li>
+      <li>
+        <b>点击“跳转微软授权”</b><br>
+        系统将跳转到微软登录页面，登录并同意授权后，微软会回传授权码（code）到回调页面。
+      </li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h2>三、回调与后续操作</h2>
+    <ol>
+      <li>
+        <b>回调页面显示授权结果</b><br>
+        授权成功后，浏览器会跳转至 <code>onedrive-callback.html</code>，页面会显示授权码。<br>
+        你可以复制该 code，返回 Alist 后台进行后续挂载操作。
+        <div class="tip">
+          高级用法：如你有开发后端 API 的能力，也可以在回调页面用 JS 自动将 code 转发给自己的后端处理。
+        </div>
+      </li>
+      <li>
+        <b>在 Alist 挂载 OneDrive 时</b><br>
+        <ul>
+          <li>使用 Azure 应用的 <code>client_id</code> 和 <code>client_secret</code></li>
+          <li><b>redirect_uri</b> 填与你 Azure 注册和授权页面一致的地址</li>
+          <li>按照 Alist 指引完成挂载</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h2>四、常见问题</h2>
+    <ul>
+      <li><b>redirect_uri 必须完全一致</b>：包括大小写、协议（http/https）、末尾斜杠等，必须与 Azure 注册和页面一致。</li>
+      <li><b>页面无法访问？</b> 检查 GitHub Pages 是否正确部署，URL 是否拼写无误。</li>
+      <li><b>授权后没看到 code？</b> 检查 Azure 应用重定向 URI 是否准确，页面代码是否为最新版。</li>
+    </ul>
+  </div>
+
+  <div class="step">
+    <h2>五、参考链接</h2>
+    <ul>
+      <li><a href="https://alist.nn.ci/zh/guide/drivers/onedrive/" target="_blank">Alist 官方文档</a></li>
+      <li><a href="https://learn.microsoft.com/zh-cn/azure/active-directory/develop/quickstart-register-app" target="_blank">微软 Azure 应用注册文档</a></li>
+      <li><a href="https://pages.github.com/" target="_blank">GitHub Pages 官方说明</a></li>
+    </ul>
+  </div>
+
+  <div class="notice">
+    <p><del>如遇其它技术问题，可在本项目 issue 区留言或提交讨论。</del></p>
+    <p>代码都是 AI 写的，出了问题可以给我留言但我也不一定会修。</p>
+  </div>
+
+</body>
+</html>
