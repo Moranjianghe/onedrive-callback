@@ -160,37 +160,41 @@
 </head>
 
 <body>
-    <h1>适用于 Alist 的 OneDrive 授权工具</h1>
+  <h1>适用于 Alist 的 OneDrive 授权工具</h1>
   <div class="step">
     <h2>一、注册应用</h2>
-      <ul>
-        <li>登录 <a href="https://portal.azure.com/" target="_blank" rel="noopener noreferrer">Azure 门户</a></li>
-        <li>注册应用，获得 <code>client_id</code>（Application (client) ID）</li>
-        <li>在"重定向 URI"中添加你的 GitHub Pages 页面地址，如：<br>
-          <span class="url">https://yourname.github.io/yourrepo/onedrive-callback.html</span>
-        </li>
-        <li><b>配置必要的 API 权限</b>：
-          <ul>
-            <li>在应用注册后，进入"API 权限"页面</li>
-            <li>点击"添加权限" > 选择"Microsoft Graph"</li>
-            <li>选择"委托的权限"，搜索并勾选：
-              <ul>
-                <li><code>Files.ReadWrite.All</code>（读写所有文件）</li>
-                <li><code>Files.Read.All</code>（读取所有文件）</li>
-                <li><code>User.Read</code>（读取用户信息）</li>
-                <li><code>offline_access</code>（离线访问）</li>
-              </ul>
-            </li>
-            <li>点击"添加权限"保存</li>
-            <li>如为组织账户，可能需要管理员同意这些权限</li>
-          </ul>
-        </li>
-      </ul>
+    <ul>
+      <li>登录 <a href="https://portal.azure.com/" target="_blank" rel="noopener noreferrer">Azure 门户</a></li>
+      <li>注册应用，获得 <code>client_id</code>（Application (client) ID）</li>
+      <li>在"重定向 URI"中添加你的 GitHub Pages 页面地址，如：<br>
+        <span class="url">https://yourname.github.io/yourrepo/onedrive-callback.html</span>
+      </li>
 
-      <div class="notice" style="background: #e3f2fd; color: #0d47a1; border-left: 4px solid #1976d2;">
-        <strong>⚠️ API权限配置很重要！</strong>
-        <p>若未正确配置API权限，即使授权成功也无法正常访问OneDrive文件。必须授予至少<code>Files.ReadWrite.All</code>和<code>User.Read</code>权限。</p>
-      </div>
+
+
+      <li><b>配置必要的 API 权限</b>：
+        <ul>
+          <li>在应用注册后，进入"API 权限"页面</li>
+          <li>点击"添加权限" > 选择"Microsoft Graph"</li>
+          <li>选择"委托的权限"，搜索 Files 并勾选需要使用的以 "Files." 开头的权限</li>
+          <li class="image-container" style="margin: 15px 0;">
+            <figure style="margin: 0; text-align: center;">
+              <img src="./pbtqwogj.3hx.png" alt="Azure应用注册示例"
+                style="width: 800px; max-width: 100%; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <figcaption style="margin-top: 8px; font-style: italic; color: #666; font-size: 0.9em;">Azure应用注册界面示例
+              </figcaption>
+            </figure>
+          </li>
+          <li>点击"添加权限"保存</li>
+          <li>如为组织账户，可能需要管理员同意这些权限</li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="notice" style="background: #e3f2fd; color: #0d47a1; border-left: 4px solid #1976d2;">
+      <strong>⚠️ API权限配置很重要！</strong>
+      <p>若未正确配置API权限，即使授权成功也无法正常访问OneDrive文件。</p>
+    </div>
     </li>
     <li>
       <b>部署授权页面到 GitHub Pages</b><br>
