@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>OneDrive 授权回调</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    .success { color: green; }
+    .error   { color: red; }
+    .code-block { background: #f4f4f4; padding: 0.5em; border-radius: 4px; margin: 1em 0; }
+  </style>
+</head>
+<body>
+  <h1>OneDrive 授权结果</h1>
+  <div id="result"></div>
+  <script>
+    // 解析 URL 参数
+    function getQueryVariable(variable) {
+      const query = window.location.search.substring(1);
+      const vars = query.split('&');
+      for (let i = 0; i < vars.length; i++) {
+        const pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) === variable) {
+          return decodeURIComponent(pair[1]);
+        }
+      }
+      return null;
+    }
+
+    const code = getQueryVariable('code');
+    const error = getQueryVariable('error');
+    const resultDiv = document.getElementById('result');
+
+    if (code) {
+      resultDiv.innerHTML = `
+        <div class="success">授权成功！请复制下方 code 用于后续挂载：</div>
+        <div class="code-block"><code>${code}</code></div>
+        <div>你可以现在关闭此页面，回到 Alist 后台继续操作。</div>
+      `;
+      // 如需自动提交 code 到后端，可在此添加 XHR/Fetch 代码
+    } else if (error) {
+      resultDiv.innerHTML = `
+        <div class="error">授权失败：${error}</div>
+        <div>请检查 Azure 应用配置和 redirect URI。</div>
+      `;
+    } else {
+      resultDiv.innerHTML = `
+        <div class="error">未检测到 code，请通过正确的授权流程访问本页面。</div>
+      `;
+    }
+  </script>
+</body>
+</html>
