@@ -36,15 +36,16 @@
 
     // 格式化長字符串，每 64 字元插入 *
     function formatToken(str) {
-      if (!str) return '(未获取到)';
+      if (!str) return '';
       return str.replace(/(.{64})/g, '$1*');
     }
 
     if (code) {
+      // 連接 code 和 code_verifier，並格式化
+      const joined = code + (code_verifier ? code_verifier : '');
       resultDiv.innerHTML = `
-        <div class="success">授权成功！请复制下方 code 及 code_verifier 用于后续挂载：</div>
-        <div class="code-block"><b>code：</b><code>${formatToken(code)}</code></div>
-        <div class="code-block"><b>code_verifier：</b><code>${formatToken(code_verifier)}</code></div>
+        <div class="success">授权成功！请复制下方合并后的字符串用于后续挂载：</div>
+        <div class="code-block"><code>${formatToken(joined)}</code></div>
         <div>你可以现在关闭此页面，回到 Alist 后台继续操作。</div>
       `;
       // 如需自动提交 code 到后端，可在此添加 XHR/Fetch 代码
