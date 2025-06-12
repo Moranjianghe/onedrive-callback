@@ -34,20 +34,24 @@
     // 取得 code_verifier
     const code_verifier = sessionStorage.getItem('onedrive_pkce_code_verifier');
 
-    // 合成 token（Alist 格式：code!code_verifier）
+    // 合成 token（Alist 格式：code&code_verifier）
     function joinToken(code, verifier) {
-      // Alist 官方格式为 code + '!' + code_verifier
-      return code && verifier ? `${code}!${verifier}` : '';
+      // Alist 官方格式為 code + '&' + code_verifier
+      return code && verifier ? `${code}&${verifier}` : '';
     }
 
     if (code) {
       const token = joinToken(code, code_verifier);
       resultDiv.innerHTML = `
-        <div class="success">授权成功！请复制下方 token（Alist 格式）用于后续挂载：</div>
-        <div class="code-block"><code>${token || '(未获取到)'}</code></div>
-        <div>你可以现在关闭此页面，回到 Alist 后台继续操作。</div>
+        <div class="success">授權成功！請複製下方 token 並粘貼到 <b>Alist 後台掛載頁面</b> 的 token 輸入框：</div>
+        <div class="code-block"><code>${token || '(未獲取到)'}</code></div>
+        <div style="color:#888;font-size:0.95em;margin-bottom:1em;">
+          <b>說明：</b>此 token 格式為 <code>code&code_verifier</code>，<br>
+          只需粘貼到 Alist 後台掛載頁面，Alist 會自動為你換取 refresh_token。
+        </div>
+        <div>你可以現在關閉此頁面，回到 Alist 後台繼續操作。</div>
       `;
-      // 如需自动提交 code 到后端，可在此添加 XHR/Fetch 代码
+      // 如需自動提交 code 到後端，可在此添加 XHR/Fetch 代碼
     } else if (error) {
       resultDiv.innerHTML = `
         <div class="error">授权失败：${error}</div>
