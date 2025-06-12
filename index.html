@@ -202,26 +202,27 @@
 
   <div class="step">
     <h2>二、发起授权</h2>
-    <li>
-      <b>部署授权页面到 GitHub Pages</b>
-    </li>
-    <li>
-      访问你部署的 <code>onedrive-auth.html</code>，如：<br>
-      <a href="./onedrive-auth.html" target="_blank"
-        rel="noopener noreferrer">https://yourname.github.io/yourrepo/onedrive-auth.html</a>
-    </li>
-    <li>
-      <b>填写授权信息</b><br>
-      <ul>
-        <li>输入 <b>client_id</b>（Azure 应用注册获得）</li>
-        <li><b>redirect_uri</b> 默认自动填为同目录下的 <code>onedrive-callback.html</code>，如无特殊需求无需修改</li>
-        <li>选择授权类型（一般选“国际版/个人/商业版”即可）</li>
-      </ul>
-    </li>
-    <li>
-      <b>点击“跳转微软授权”</b><br>
-      系统将跳转到微软登录页面，登录并同意授权后，微软会回传授权码（code）到回调页面。
-    </li>
+    <ol>
+      <li>
+        <b>部署授权页面到 GitHub Pages</b>
+      </li>
+      <li>
+        访问你部署的 <code>onedrive-auth.html</code>，如：<br>
+        <a href="./onedrive-auth.html" target="_blank"
+          rel="noopener noreferrer">https://yourname.github.io/yourrepo/onedrive-auth.html</a>
+      </li>
+      <li>
+        <b>填写授权信息</b><br>
+        <ul>
+          <li>输入 <b>client_id</b>（Azure 应用注册获得）</li>
+          <li><b>redirect_uri</b> 默认自动填为同目录下的 <code>onedrive-callback.html</code>，如无特殊需求无需修改</li>
+          <li>选择授权类型（一般选“国际版/个人/商业版”即可）</li>
+        </ul>
+      </li>
+      <li>
+        <b>点击“跳转微软授权”</b><br>
+        系统将跳转到微软登录页面，登录并同意授权后，微软会回传授权码（code）到回调页面。
+      </li>
     </ol>
   </div>
 
