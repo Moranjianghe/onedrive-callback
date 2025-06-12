@@ -90,6 +90,8 @@
         + `&code_challenge=${code_challenge}`
         + `&code_challenge_method=S256`;
 
+      console.log("授权跳转URL：", decodeURIComponent(url)); // ← 新增這行，方便排查
+
       window.location.href = url;
     };
   </script>
