@@ -31,10 +31,14 @@
     const error = getQueryVariable('error');
     const resultDiv = document.getElementById('result');
 
+    // 取得 code_verifier
+    const code_verifier = sessionStorage.getItem('onedrive_pkce_code_verifier');
+
     if (code) {
       resultDiv.innerHTML = `
-        <div class="success">授权成功！请复制下方 code 用于后续挂载：</div>
-        <div class="code-block"><code>${code}</code></div>
+        <div class="success">授权成功！请复制下方 code 及 code_verifier 用于后续挂载：</div>
+        <div class="code-block"><b>code：</b><code>${code}</code></div>
+        <div class="code-block"><b>code_verifier：</b><code>${code_verifier || '(未获取到)'}</code></div>
         <div>你可以现在关闭此页面，回到 Alist 后台继续操作。</div>
       `;
       // 如需自动提交 code 到后端，可在此添加 XHR/Fetch 代码
