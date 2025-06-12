@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>OneDrive 授权跳转工具</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    input, select { margin: 0.3em 0; padding: 0.2em; }
+    label { display: block; margin-top: 1em; }
+    .desc { color: #555; font-size: 0.95em; }
+    .btn { padding: 0.4em 1em; background: #1976d2; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .btn:active { background: #1565c0; }
+    .row { margin: 1em 0; }
+  </style>
+</head>
+<body>
+  <h1>OneDrive 一键授权跳转</h1>
+  <div class="desc">请填写 Azure 应用的 client_id 并选择授权类型，点击跳转后登录微软账号。</div>
+  <form id="authForm">
+    <label>
+      client_id（Azure 应用注册的 Application (client) ID）<br>
+      <input type="text" id="client_id" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="width: 90%;">
+    </label>
+    <label>
+      redirect_uri（授权回调页面，需与 Azure 注册一致）<br>
+      <input type="text" id="redirect_uri" required style="width: 90%;" value="">
+    </label>
+    <label>
+      授权类型<br>
+      <select id="type">
+        <option value="common">国际版/个人/商业版（common）</option>
+        <option value="consumers">个人 OneDrive（consumers）</option>
+        <option value="organizations">商业/教育 OneDrive（organizations）</option>
+        <option value="microsoftonline.com">世纪互联（microsoftonline.com）</option>
+      </select>
+    </label>
+    <div class="row">
+      <button type="submit" class="btn">跳转微软授权</button>
+    </div>
+  </form>
+  <script>
+    // 自动填充 redirect_uri 为当前页面目录下的 onedrive-callback.html
+    document.getElementById('redirect_uri').value =
+      window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';
+
+    document.getElementById('authForm').onsubmit = function(e) {
+      e.preventDefault();
+      const client_id = document.getElementById('client_id').value.trim();
+      const redirect_uri = encodeURIComponent(document.getElementById('redirect_uri').value.trim());
+      const type = document.getElementById('type').value;
+
+      if (!client_id || !redirect_uri) {
+        alert('请填写完整信息！');
+        return false;
+      }
+
+      let authorizeUrl;
+      if (type === "microsoftonline.com") {
+        authorizeUrl = `https://login.chinacloudapi.cn/common/oauth2/v2.0/authorize`;
+      } else {
+        authorizeUrl = `https://login.microsoftonline.com/${type}/oauth2/v2.0/authorize`;
+      }
+
+      const url = `${authorizeUrl}?client_id=${client_id}`
+        + `&response_type=code`
+        + `&redirect_uri=${redirect_uri}`
+        + `&scope=offline_access%20Files.ReadWrite.All%20User.Read`
+        + `&response_mode=query`;
+
+      window.location.href = url;
+    };
+  </script>
+</body>
+</html>
