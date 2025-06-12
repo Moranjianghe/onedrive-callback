@@ -1,18 +1,50 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8">
   <title>OneDrive 授权跳转工具</title>
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    input, select { margin: 0.3em 0; padding: 0.2em; }
-    label { display: block; margin-top: 1em; }
-    .desc { color: #555; font-size: 0.95em; }
-    .btn { padding: 0.4em 1em; background: #1976d2; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-    .btn:active { background: #1565c0; }
-    .row { margin: 1em 0; }
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+    }
+
+    input,
+    select {
+      margin: 0.3em 0;
+      padding: 0.2em;
+    }
+
+    label {
+      display: block;
+      margin-top: 1em;
+    }
+
+    .desc {
+      color: #555;
+      font-size: 0.95em;
+    }
+
+    .btn {
+      padding: 0.4em 1em;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn:active {
+      background: #1565c0;
+    }
+
+    .row {
+      margin: 1em 0;
+    }
   </style>
 </head>
+
 <body>
   <h1>OneDrive 一键授权跳转</h1>
   <div class="desc">请填写 Azure 应用的 client_id 并选择授权类型，点击跳转后登录微软账号。</div>
@@ -39,50 +71,68 @@
     </div>
   </form>
   <script>
-    // 自动填充 redirect_uri 为当前页面目录下的 onedrive-callback.html
-    document.getElementById('redirect_uri').value =
-      window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';    // 產生隨機字串函數
-    function randomString(length) {
-      const array = new Uint8Array(length);
+    // PKCE 產生器
+    function base64urlencode(str) {
+      return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+    async function pkceChallengeFromVerifier(v) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(v);
+      const digest = await window.crypto.subtle.digest('SHA-256', data);
+      return base64urlencode(digest);
+    }
+    function randomString(len = 64) {
+      const array = new Uint8Array(len);
       window.crypto.getRandomValues(array);
-      return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+      return Array.from(array).map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
     }
 
-    document.getElementById('authForm').onsubmit = async function(e) {
+    // 自動填充 redirect_uri 為當前頁面目錄下的 onedrive-callback.html
+    document.getElementById('redirect_uri').value =
+      window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'onedrive-callback.html';
+
+    document.getElementById('authForm').onsubmit = async function (e) {
       e.preventDefault();
       const client_id = document.getElementById('client_id').value.trim();
       const redirect_uri = encodeURIComponent(document.getElementById('redirect_uri').value.trim());
       const type = document.getElementById('type').value;
-
       if (!client_id || !redirect_uri) {
-        alert('请填写完整信息！');
+        alert('請填寫完整信息！');
         return false;
-      }      let authorizeUrl;
+      }
+      // PKCE: 產生 code_verifier 與 code_challenge
+      const code_verifier = randomString(64);
+      const code_challenge = await pkceChallengeFromVerifier(code_verifier);
+      sessionStorage.setItem('onedrive_code_verifier', code_verifier);
+      let authorizeUrl;
       if (type === "microsoftonline.com") {
         authorizeUrl = `https://login.chinacloudapi.cn/common/oauth2/v2.0/authorize`;
       } else {
         authorizeUrl = `https://login.microsoftonline.com/${type}/oauth2/v2.0/authorize`;
       }
-        // 保存授權相關信息以便回調頁面使用
       sessionStorage.setItem('onedrive_client_id', client_id);
-      
-      // 保存對應的 token endpoint
       let tokenEndpoint = "";
       if (type === "microsoftonline.com") {
         tokenEndpoint = "https://login.chinacloudapi.cn/common/oauth2/v2.0/token";
       } else {
         tokenEndpoint = `https://login.microsoftonline.com/${type}/oauth2/v2.0/token`;
       }
-      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);      const url = `${authorizeUrl}?client_id=${client_id}`
+      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);
+      // 帶上 code_challenge
+      const url = `${authorizeUrl}?client_id=${client_id}`
         + `&response_type=code`
         + `&redirect_uri=${redirect_uri}`
         + `&scope=offline_access%20Files.ReadWrite.All%20User.Read`
-        + `&response_mode=query`;
-
-      console.log("授权跳转URL：", decodeURIComponent(url)); // ← 新增這行，方便排查
-
+        + `&response_mode=query`
+        + `&code_challenge=${code_challenge}`
+        + `&code_challenge_method=S256`;
+      console.log("授權跳轉URL：", decodeURIComponent(url));
       window.location.href = url;
     };
   </script>
 </body>
+
 </html>

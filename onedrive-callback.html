@@ -37,17 +37,17 @@
     // 定義獲取 token 的函數
     async function getRefreshToken(code, clientId, redirectUri) {
       try {
-        // 決定使用哪個 endpoint (根據之前的選擇)
         const tokenEndpoint = sessionStorage.getItem('onedrive_token_endpoint') || 
           'https://login.microsoftonline.com/common/oauth2/v2.0/token';
-          // 準備表單數據
+        const code_verifier = sessionStorage.getItem('onedrive_code_verifier') || '';
         const formData = new URLSearchParams();
         formData.append('client_id', clientId);
         formData.append('grant_type', 'authorization_code');
         formData.append('code', code);
         formData.append('redirect_uri', redirectUri);
-        
-        // 發送請求獲取 token
+        if (code_verifier) {
+          formData.append('code_verifier', code_verifier);
+        }
         const response = await fetch(tokenEndpoint, {
           method: 'POST',
           headers: {
@@ -55,12 +55,10 @@
           },
           body: formData
         });
-        
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
         }
-        
         const data = await response.json();
         return {
           refresh_token: data.refresh_token,
