@@ -56,8 +56,7 @@
     <label>
       redirect_uri（授权回调页面，需与 Azure 注册一致）<br>
       <input type="text" id="redirect_uri" required style="width: 90%;" value="">
-    </label>
-    <label>
+    </label>    <label>
       授权类型<br>
       <select id="type">
         <option value="common">国际版/个人/商业版（common）</option>
@@ -65,6 +64,15 @@
         <option value="organizations">商业/教育 OneDrive（organizations）</option>
         <option value="microsoftonline.com">世纪互联（microsoftonline.com）</option>
       </select>
+    </label>
+    <label>
+      应用程序类型<br>
+      <select id="app_type">
+        <option value="web">Web 应用（推荐用于 Alist）</option>
+        <option value="native">Native 应用</option>
+        <option value="spa">单页应用 (SPA)</option>
+      </select>
+      <div class="desc" style="font-size:0.85em;margin-top:0.3em;">⚠️ 注意：此类型必须与 Azure 门户中的应用注册类型一致</div>
     </label>
     <div class="row">
       <button type="submit" class="btn">跳转微软授权</button>
@@ -120,15 +128,23 @@
       } else {
         tokenEndpoint = `https://login.microsoftonline.com/${type}/oauth2/v2.0/token`;
       }
-      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);
-      // 帶上 code_challenge
-      const url = `${authorizeUrl}?client_id=${client_id}`
+      sessionStorage.setItem('onedrive_token_endpoint', tokenEndpoint);      // 獲取應用類型
+      const appType = document.getElementById('app_type').value;
+      sessionStorage.setItem('onedrive_app_type', appType);
+      
+      // 構建基本授權URL
+      let url = `${authorizeUrl}?client_id=${client_id}`
         + `&response_type=code`
         + `&redirect_uri=${redirect_uri}`
         + `&scope=offline_access%20Files.ReadWrite.All%20User.Read`
-        + `&response_mode=query`
-        + `&code_challenge=${code_challenge}`
-        + `&code_challenge_method=S256`;
+        + `&response_mode=query`;
+      
+      // 根據應用類型添加不同的參數
+      if (appType === 'spa' || appType === 'web') {
+        // 對於 SPA 和 Web 應用類型，使用 PKCE 流程增強安全性
+        url += `&code_challenge=${code_challenge}&code_challenge_method=S256`;
+      }
+      
       console.log("授權跳轉URL：", decodeURIComponent(url));
       window.location.href = url;
     };

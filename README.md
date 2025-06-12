@@ -12,7 +12,12 @@
 2. 新增應用，取得 `client_id`（Application (client) ID）
 3. 在「重定向 URI」新增您的 GitHub Pages 頁面地址，例如：
    `https://<yourname>.github.io/onedrive-callback/onedrive-callback.html`，平台選「Web」
-4. 配置 API 權限：
+4. 選擇正確的應用程序類型：
+   - **重要**: 在「身份驗證」頁面，選擇平台類型為「**Web**」（推薦用於 Alist）
+   - 請勿選擇「單頁應用 (SPA)」，這會導致 Alist 無法使用相應的 token
+   - 重定向 URI 設定必須與授權頁面指定的一致
+
+5. 配置 API 權限：
    - 進入「API 權限」頁面
    - 點擊「添加權限」> 選「Microsoft Graph」>「委託的權限」
    - 搜尋 `Files`，勾選所需權限（如 Files.ReadWrite.All）
@@ -20,17 +25,22 @@
 
    ![Azure應用註冊界面示例](img/pbtqwogj.3hx.png)
 
-> ⚠️ **API 權限配置非常重要！**
-> 未正確配置將導致授權後無法訪問 OneDrive 文件。
+> ⚠️ **應用類型和 API 權限配置非常重要！**
+> - 應用類型必須設置為「Web」，否則 Alist 可能會出現 AADSTS90023 錯誤
+> - 未正確配置 API 權限將導致授權後無法訪問 OneDrive 文件
 
 ### 二、發起授權
 
 1. Fork 本項目，部署授權頁面到 GitHub Pages（可選）
+
 2. 訪問您部署的 `onedrive-auth.html`，或使用[本項目線上工具](https://moranjianghe.github.io/onedrive-callback/onedrive-auth.html)
+
 3. 填寫授權資訊：
    - `client_id`（Azure 應用註冊獲得）
    - `redirect_uri`（預設為同目錄下的 `onedrive-callback.html`，一般無需修改）
    - 選擇授權類型（一般選「國際版/個人/商業版」）
+   - **選擇應用程序類型**（選擇「Web 應用」，必須與 Azure 門戶中設置的一致）
+
 4. 點擊「跳轉微軟授權」，登入並同意授權，微軟將回傳授權碼（code）到回調頁面
 
 ### 三、回調與後續操作
@@ -59,6 +69,7 @@
 >
 > - `client_secret` 雖顯示必填，實際應留空
 > - 若授權失敗，請重檢 API 權限與 redirect_uri 配置
+> - 如遇錯誤 `AADSTS90023: Tokens issued for the 'Single-Page Application'...`，請確保在 Azure 門戶中將應用類型設為「Web」而非「單頁應用 (SPA)」，並在授權工具中選擇相對應的應用類型
 
 ## 參考資源
 
