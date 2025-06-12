@@ -34,18 +34,17 @@
     // 取得 code_verifier
     const code_verifier = sessionStorage.getItem('onedrive_pkce_code_verifier');
 
-    // 格式化長字符串，每 64 字元插入 *
-    function formatToken(str) {
-      if (!str) return '';
-      return str.replace(/(.{64})/g, '$1*');
+    // 合成 token（Alist 格式：code!code_verifier）
+    function joinToken(code, verifier) {
+      // Alist 官方格式为 code + '!' + code_verifier
+      return code && verifier ? `${code}!${verifier}` : '';
     }
 
     if (code) {
-      // 連接 code 和 code_verifier，並格式化
-      const joined = code + (code_verifier ? code_verifier : '');
+      const token = joinToken(code, code_verifier);
       resultDiv.innerHTML = `
-        <div class="success">授权成功！请复制下方合并后的字符串用于后续挂载：</div>
-        <div class="code-block"><code>${formatToken(joined)}</code></div>
+        <div class="success">授权成功！请复制下方 token（Alist 格式）用于后续挂载：</div>
+        <div class="code-block"><code>${token || '(未获取到)'}</code></div>
         <div>你可以现在关闭此页面，回到 Alist 后台继续操作。</div>
       `;
       // 如需自动提交 code 到后端，可在此添加 XHR/Fetch 代码
